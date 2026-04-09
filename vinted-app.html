@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vinted Tool">
+<title>Vinted Tool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;min-height:100vh;padding-bottom:40px}
+.header{background:#fff;border-bottom:1px solid #e5e5e5;padding:16px 20px;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px;font-weight:600;color:#09B1BA}
+.header p{font-size:12px;color:#aaa;margin-top:2px}
+.nav{display:flex;background:#fff;border-bottom:1px solid #e5e5e5;overflow-x:auto;position:sticky;top:57px;z-index:9}
+.nav-btn{flex:1;min-width:70px;padding:12px 6px;font-size:12px;font-weight:500;border:none;background:none;cursor:pointer;color:#aaa;border-bottom:2px solid transparent;white-space:nowrap;text-align:center}
+.nav-btn.active{color:#09B1BA;border-bottom-color:#09B1BA}
+.content{padding:20px;max-width:600px;margin:0 auto}
+.page{display:none}.page.active{display:block}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-grid.two{grid-template-columns:repeat(2,1fr)}
+.stat{background:#fff;border-radius:12px;padding:14px;border:1px solid #eee}
+.stat .n{font-size:18px;font-weight:700;color:#1a1a1a}
+.stat .l{font-size:11px;color:#888;margin-top:3px}
+.stat.accent{background:#09B1BA}
+.stat.accent .n{color:#fff}
+.stat.accent .l{color:rgba(255,255,255,0.75)}
+label{font-size:13px;color:#666;margin-bottom:5px;display:block;margin-top:14px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:14px;background:#fff;color:#1a1a1a;-webkit-appearance:none;outline:none}
+input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{border-color:#09B1BA}
+textarea{min-height:70px;resize:vertical}
+input[type=range]{width:100%;accent-color:#09B1BA}
+.row{display:flex;align-items:center;gap:12px}
+.row input[type=range]{flex:1}
+.val{font-size:14px;font-weight:600;min-width:52px;text-align:right;color:#09B1BA}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-primary{width:100%;padding:13px;background:#09B1BA;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:16px}
+.btn-primary:active{opacity:0.8}
+.verdict{border-radius:12px;padding:14px;margin-top:16px;border:1px solid}
+.verdict .vt{font-size:14px;font-weight:600;margin-bottom:4px}
+.verdict .vs{font-size:13px;line-height:1.5}
+.boost-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.boost-btn{padding:7px 13px;border-radius:20px;border:1px solid #ddd;background:#fff;font-size:12px;cursor:pointer;color:#555}
+.boost-btn.active{background:#e6f8f9;color:#09B1BA;border-color:#09B1BA}
+.divider{border:none;border-top:1px solid #eee;margin:20px 0}
+.sale-item{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #eee}
+.sale-item .s-name{font-weight:600;font-size:14px;margin-bottom:4px}
+.sale-item .s-meta{font-size:12px;color:#888;line-height:1.6}
+.sale-item .s-footer{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.vendu{background:#e6f9f0;color:#0a7c4e}
+.badge.encours{background:#fff8e6;color:#b07d00}
+.profit{font-weight:700;font-size:15px}
+.profit.pos{color:#0a7c4e}.profit.neg{color:#d32f2f}
+.del-btn{background:none;border:none;font-size:22px;color:#ddd;cursor:pointer;padding:0 4px}
+.empty{text-align:center;padding:40px 20px;color:#bbb;font-size:14px}
+.annonce-box{background:#fff;border-radius:12px;padding:16px;margin-top:16px;border:1px solid #eee}
+.annonce-box .at{font-weight:600;font-size:11px;color:#aaa;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px}
+.annonce-box .ac{font-size:14px;line-height:1.6;color:#1a1a1a;margin-bottom:14px}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px}
+.tag{padding:4px 12px;border-radius:20px;background:#e6f8f9;color:#09B1BA;font-size:12px;font-weight:500}
+.copy-btn{margin-top:12px;padding:10px;width:100%;background:#f5f5f0;border:1px solid #ddd;border-radius:10px;font-size:13px;cursor:pointer;color:#555}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 22px;border-radius:20px;font-size:13px;opacity:0;pointer-events:none;transition:opacity 0.3s;z-index:99}
+.toast.show{opacity:1}
+.recap-section{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;border:1px solid #eee}
+.recap-section h3{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px}
+.recap-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f0;font-size:14px}
+.recap-row:last-child{border-bottom:none}
+.recap-row .rl{color:#555}
+.recap-row .rv{font-weight:600;color:#1a1a1a}
+.recap-row .rv.pos{color:#0a7c4e}
+.recap-row .rv.neg{color:#d32f2f}
+.bar-wrap{background:#f0f0f0;border-radius:6px;height:7px;margin:4px 0 8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;background:#09B1BA}
+.month-block{margin-bottom:16px}
+.month-title{font-size:13px;font-weight:600;color:#555;margin-bottom:6px}
+.no-data{text-align:center;padding:50px 20px;color:#bbb;font-size:14px;line-height:1.8}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Vinted Tool</h1>
+  <p>Votre assistant vendeur tout-en-un</p>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('tracker',this)">Mes ventes</button>
+  <button class="nav-btn" onclick="showPage('recap',this)">Récap</button>
+  <button class="nav-btn" onclick="showPage('boost',this)">Boost</button>
+  <button class="nav-btn" onclick="showPage('marge',this)">Marge</button>
+  <button class="nav-btn" onclick="showPage('annonce',this)">Annonce</button>
+</nav>
+
+<div class="content">
+
+  <!-- MES VENTES -->
+  <div id="page-tracker" class="page active">
+    <div class="stat-grid">
+      <div class="stat accent"><div class="n" id="t-ca">0 €</div><div class="l">CA total</div></div>
+      <div class="stat accent"><div class="n" id="t-profit">0 €</div><div class="l">Bénéfice net</div></div>
+      <div class="stat"><div class="n" id="t-nb">0</div><div class="l">Articles vendus</div></div>
+    </div>
+    <div class="field-row">
+      <div><label>Nom de l'article</label><input type="text" id="s-name" placeholder="Ex: Jean Zara 38"></div>
+      <div><label>Statut</label>
+        <select id="s-status"><option value="vendu">Vendu</option><option value="encours">En cours</option></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div><label>Prix de vente (€)</label><input type="number" id="s-price" placeholder="25" min="0" step="0.01"></div>
+      <div><label>Prix d'achat (€)</label><input type="number" id="s-cost" placeholder="5" min="0" step="0.01"></div>
+    </div>
+    <div class="field-row">
+      <div><label>Catégorie</label>
+        <select id="s-cat">
+          <option>Vêtements femme</option><option>Vêtements homme</option><option>Chaussures</option>
+          <option>Accessoires</option><option>Enfant</option><option>Maison</option><option>Autre</option>
+        </select>
+      </div>
+      <div><label>Mois</label>
+        <select id="s-month">
+          <option value="01">Janvier</option><option value="02">Février</option><option value="03">Mars</option>
+          <option value="04" selected>Avril</option><option value="05">Mai</option><option value="06">Juin</option>
+          <option value="07">Juillet</option><option value="08">Août</option><option value="09">Septembre</option>
+          <option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="addSale()">+ Ajouter l'article</button>
+    <div style="height:16px"></div>
+    <div id="sales-list"></div>
+  </div>
+
+  <!-- RECAP -->
+  <div id="page-recap" class="page">
+    <div id="recap-content"></div>
+  </div>
+
+  <!-- BOOST -->
+  <div id="page-boost" class="page">
+    <label>Prix de vente (€)</label>
+    <div class="row"><input type="range" id="b-price" min="1" max="200" value="25" step="1"><span class="val" id="b-price-out">25 €</span></div>
+    <label>Prix d'achat (€)</label>
+    <div class="row"><input type="range" id="b-cost" min="0" max="150" value="8" step="1"><span class="val" id="b-cost-out">8 €</span></div>
+    <label>Jours sans vente</label>
+    <div class="row"><input type="range" id="b-days" min="0" max="90" value="7" step="1"><span class="val" id="b-days-out">7 j</span></div>
+    <label>Type de boost</label>
+    <div class="boost-btns">
+      <button class="boost-btn active" data-cost="0.95">Dressing (0,95 €)</button>
+      <button class="boost-btn" data-cost="1.95">Vedette (1,95 €)</button>
+      <button class="boost-btn" data-cost="3.95">Super boost (3,95 €)</button>
+    </div>
+    <div class="divider"></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" id="b-net-sans">—</div><div class="l">Net sans boost</div></div>
+      <div class="stat"><div class="n" id="b-net-avec">—</div><div class="l">Net avec boost</div></div>
+      <div class="stat"><div class="n" id="b-boost-cost">—</div><div class="l">Coût boost</div></div>
+    </div>
+    <div class="verdict" id="b-verdict"></div>
+  </div>
+
+  <!-- MARGE -->
+  <div id="page-marge" class="page">
+    <label>Prix de vente (€)</label>
+    <div class="row"><input type="range" id="m-price" min="1" max="300" value="30" step="1"><span class="val" id="m-price-out">30 €</span></div>
+    <label>Prix d'achat (€)</label>
+    <div class="row"><input type="range" id="m-cost" min="0" max="200" value="10" step="1"><span class="val" id="m-cost-out">10 €</span></div>
+    <label>Frais de port à votre charge (€)</label>
+    <div class="row"><input type="range" id="m-ship" min="0" max="15" value="0" step="0.5"><span class="val" id="m-ship-out">0 €</span></div>
+    <div class="divider"></div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" id="m-fees">—</div><div class="l">Frais Vinted</div></div>
+      <div class="stat"><div class="n" id="m-net">—</div><div class="l">Bénéfice net</div></div>
+      <div class="stat"><div class="n" id="m-pct">—</div><div class="l">Marge %</div></div>
+    </div>
+    <div class="verdict" id="m-verdict"></div>
+    <label style="margin-top:20px">Prix minimum pour atteindre :</label>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" id="m-p10">—</div><div class="l">10% de marge</div></div>
+      <div class="stat"><div class="n" id="m-p20">—</div><div class="l">20% de marge</div></div>
+      <div class="stat"><div class="n" id="m-p30">—</div><div class="l">30% de marge</div></div>
+    </div>
+  </div>
+
+  <!-- ANNONCE -->
+  <div id="page-annonce" class="page">
+    <div class="field-row">
+      <div><label>Type d'article</label><input type="text" id="a-type" placeholder="veste, robe, sneakers..."></div>
+      <div><label>Marque</label><input type="text" id="a-brand" placeholder="Zara, Nike, H&M..."></div>
+    </div>
+    <div class="field-row">
+      <div><label>Taille / pointure</label><input type="text" id="a-size" placeholder="M, 38, 42..."></div>
+      <div><label>État</label>
+        <select id="a-state">
+          <option>Neuf avec étiquette</option><option>Neuf sans étiquette</option>
+          <option>Très bon état</option><option>Bon état</option><option>Satisfaisant</option>
+        </select>
+      </div>
+    </div>
+    <label>Couleur / détails</label>
+    <textarea id="a-details" placeholder="Ex: noir, coupe droite, petit accroc sur la couture..."></textarea>
+    <label>Prix de vente (€) — optionnel</label>
+    <input type="number" id="a-price-field" placeholder="25" min="0" step="0.01">
+    <button class="btn-primary" onclick="genAnnonce()">Générer l'annonce optimisée</button>
+    <div id="annonce-out"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MONTHS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+let sales = JSON.parse(localStorage.getItem('vinted_sales_v2') || '[]');
+let boostCost = 0.95;
+
+function save() { localStorage.setItem('vinted_sales_v2', JSON.stringify(sales)); }
+function vFees(p) { return p * 0.05 + 0.70; }
+function fmt(n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + ' €'; }
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'recap') renderRecap();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ======== TRACKER ======== */
+function addSale() {
+  const name = document.getElementById('s-name').value.trim();
+  const price = parseFloat(document.getElementById('s-price').value) || 0;
+  const cost = parseFloat(document.getElementById('s-cost').value) || 0;
+  const status = document.getElementById('s-status').value;
+  const cat = document.getElementById('s-cat').value;
+  const month = document.getElementById('s-month').value;
+  if (!name || price <= 0) { showToast('Renseignez un nom et un prix'); return; }
+  const fees = vFees(price);
+  const profit = price - fees - cost;
+  sales.unshift({ id: Date.now(), name, price, cost, fees, profit, status, cat, month });
+  save();
+  document.getElementById('s-name').value = '';
+  document.getElementById('s-price').value = '';
+  document.getElementById('s-cost').value = '';
+  renderSales();
+  showToast('Article ajouté !');
+}
+
+function deleteSale(id) {
+  if (!confirm('Supprimer cet article ?')) return;
+  sales = sales.filter(s => s.id !== id);
+  save(); renderSales();
+}
+
+function renderSales() {
+  const sold = sales.filter(s => s.status === 'vendu');
+  const ca = sold.reduce((a, s) => a + s.price, 0);
+  const profit = sold.reduce((a, s) => a + s.profit, 0);
+  document.getElementById('t-ca').textContent = ca.toFixed(2) + ' €';
+  document.getElementById('t-profit').textContent = fmt(profit);
+  document.getElementById('t-nb').textContent = sold.length;
+  const list = document.getElementById('sales-list');
+  if (!sales.length) {
+    list.innerHTML = '<div class="empty">Aucun article ajouté.<br>Commencez par ajouter une vente !</div>';
+    return;
+  }
+  list.innerHTML = sales.map(s => `
+    <div class="sale-item">
+      <div class="s-name">${s.name}</div>
+      <div class="s-meta">
+        Vendu <strong>${s.price.toFixed(2)} €</strong> · Acheté ${s.cost.toFixed(2)} € · Frais ${s.fees.toFixed(2)} €<br>
+        ${s.cat} · ${MONTHS[parseInt(s.month)-1]}
+      </div>
+      <div class="s-footer">
+        <span class="badge ${s.status}">${s.status === 'vendu' ? 'Vendu' : 'En cours'}</span>
+        <span class="profit ${s.profit >= 0 ? 'pos' : 'neg'}">${fmt(s.profit)}</span>
+        <button class="del-btn" onclick="deleteSale(${s.id})">×</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ======== RECAP ======== */
+function renderRecap() {
+  const el = document.getElementById('recap-content');
+  const sold = sales.filter(s => s.status === 'vendu');
+
+  if (!sold.length) {
+    el.innerHTML = '<div class="no-data">Aucune vente enregistrée.<br>Ajoutez vos ventes dans l\'onglet<br>"Mes ventes" pour voir vos stats !</div>';
+    return;
+  }
+
+  const totalCA = sold.reduce((a,s) => a + s.price, 0);
+  const totalProfit = sold.reduce((a,s) => a + s.profit, 0);
+  const totalFees = sold.reduce((a,s) => a + s.fees, 0);
+  const totalCost = sold.reduce((a,s) => a + s.cost, 0);
+  const avgProfit = totalProfit / sold.length;
+  const marginPct = totalCA > 0 ? (totalProfit / totalCA * 100) : 0;
+  const bestItem = sold.reduce((a,b) => b.profit > a.profit ? b : a);
+  const worstItem = sold.reduce((a,b) => b.profit < a.profit ? b : a);
+
+  // Par mois
+  const byMonth = {};
+  sold.forEach(s => {
+    if (!byMonth[s.month]) byMonth[s.month] = {ca:0,profit:0,nb:0,cost:0,fees:0};
+    byMonth[s.month].ca += s.price;
+    byMonth[s.month].profit += s.profit;
+    byMonth[s.month].cost += s.cost;
+    byMonth[s.month].fees += s.fees;
+    byMonth[s.month].nb++;
+  });
+  const maxCA = Math.max(...Object.values(byMonth).map(m => m.ca), 1);
+
+  // Par catégorie
+  const byCat = {};
+  sold.forEach(s => {
+    if (!byCat[s.cat]) byCat[s.cat] = {ca:0,profit:0,nb:0};
+    byCat[s.cat].ca += s.price;
+    byCat[s.cat].profit += s.profit;
+    byCat[s.cat].nb++;
+  });
+
+  el.innerHTML = `
+    <div class="stat-grid two">
+      <div class="stat accent"><div class="n">${totalCA.toFixed(2)} €</div><div class="l">CA total</div></div>
+      <div class="stat accent"><div class="n">${fmt(totalProfit)}</div><div class="l">Bénéfice net total</div></div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n">${sold.length}</div><div class="l">Articles vendus</div></div>
+      <div class="stat"><div class="n">${marginPct.toFixed(1)}%</div><div class="l">Marge moyenne</div></div>
+      <div class="stat"><div class="n">${avgProfit.toFixed(2)} €</div><div class="l">Bénéf. moyen</div></div>
+    </div>
+
+    <div class="recap-section">
+      <h3>Détail financier complet</h3>
+      <div class="recap-row"><span class="rl">Chiffre d'affaires</span><span class="rv">${totalCA.toFixed(2)} €</span></div>
+      <div class="recap-row"><span class="rl">Total prix d'achat</span><span class="rv neg">− ${totalCost.toFixed(2)} €</span></div>
+      <div class="recap-row"><span class="rl">Total frais Vinted</span><span class="rv neg">− ${totalFees.toFixed(2)} €</span></div>
+      <div class="recap-row" style="border-top:1px solid #eee;margin-top:4px;padding-top:12px">
+        <span class="rl" style="font-weight:600;font-size:15px">Bénéfice net</span>
+        <span class="rv ${totalProfit >= 0 ? 'pos' : 'neg'}" style="font-size:18px">${fmt(totalProfit)}</span>
+      </div>
+    </div>
+
+    <div class="recap-section">
+      <h3>Records</h3>
+      <div class="recap-row">
+        <span class="rl">Meilleure vente<br><small style="color:#aaa">${bestItem.name}</small></span>
+        <span class="rv pos">+${bestItem.profit.toFixed(2)} €</span>
+      </div>
+      <div class="recap-row">
+        <span class="rl">Moins bonne vente<br><small style="color:#aaa">${worstItem.name}</small></span>
+        <span class="rv ${worstItem.profit >= 0 ? 'pos' : 'neg'}">${fmt(worstItem.profit)}</span>
+      </div>
+    </div>
+
+    <div class="recap-section">
+      <h3>Performance par mois</h3>
+      ${Object.keys(byMonth).sort().map(m => `
+        <div class="month-block">
+          <div class="month-title">${MONTHS[parseInt(m)-1]} — ${byMonth[m].nb} vente${byMonth[m].nb>1?'s':''}</div>
+          <div class="bar-wrap"><div class="bar-fill" style="width:${(byMonth[m].ca/maxCA*100).toFixed(1)}%"></div></div>
+          <div class="recap-row"><span class="rl">CA</span><span class="rv">${byMonth[m].ca.toFixed(2)} €</span></div>
+          <div class="recap-row"><span class="rl">Frais achat + Vinted</span><span class="rv neg">− ${(byMonth[m].cost+byMonth[m].fees).toFixed(2)} €</span></div>
+          <div class="recap-row"><span class="rl" style="font-weight:600">Bénéfice</span><span class="rv ${byMonth[m].profit>=0?'pos':'neg'}" style="font-size:15px">${fmt(byMonth[m].profit)}</span></div>
+        </div>
+      `).join('<hr style="border:none;border-top:1px solid #f0f0f0;margin:4px 0 12px">')}
+    </div>
+
+    <div class="recap-section">
+      <h3>Par catégorie</h3>
+      ${Object.entries(byCat).sort((a,b) => b[1].profit - a[1].profit).map(([cat, d]) => `
+        <div class="recap-row">
+          <span class="rl">${cat}<br><small style="color:#aaa">${d.nb} article${d.nb>1?'s':''} · CA ${d.ca.toFixed(2)} €</small></span>
+          <span class="rv ${d.profit>=0?'pos':'neg'}">${fmt(d.profit)}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ======== BOOST ======== */
+function calcBoost() {
+  const price = parseFloat(document.getElementById('b-price').value);
+  const cost = parseFloat(document.getElementById('b-cost').value);
+  const days = parseFloat(document.getElementById('b-days').value);
+  document.getElementById('b-price-out').textContent = price + ' €';
+  document.getElementById('b-cost-out').textContent = cost + ' €';
+  document.getElementById('b-days-out').textContent = days + ' j';
+  const fees = vFees(price);
+  const netSans = price - fees - cost;
+  const netAvec = netSans - boostCost;
+  document.getElementById('b-net-sans').textContent = netSans.toFixed(2) + ' €';
+  document.getElementById('b-net-avec').textContent = netAvec.toFixed(2) + ' €';
+  document.getElementById('b-boost-cost').textContent = boostCost.toFixed(2) + ' €';
+  const v = document.getElementById('b-verdict');
+  let bg,border,tc,title,sub;
+  if (netSans < 0) {
+    bg='#fff0f0';border='#ffb3b3';tc='#d32f2f';title='Vente à perte';
+    sub='Les frais Vinted ('+fees.toFixed(2)+' €) + prix d\'achat dépassent votre prix. Relevez le prix.';
+  } else if (netAvec < 0) {
+    bg='#fff8e6';border='#ffd980';tc='#b07d00';title='Boost déconseillé';
+    sub='Votre marge de '+netSans.toFixed(2)+' € ne couvre pas le boost. Montez le prix ou attendez.';
+  } else if (days < 3) {
+    bg='#e6f8f9';border='#09B1BA';tc='#0a7c7c';title='Trop tôt pour booster';
+    sub='L\'article est tout frais ! Attendez 5 à 7 jours avant d\'utiliser un boost.';
+  } else if (boostCost / netSans > 0.4) {
+    bg='#fff8e6';border='#ffd980';tc='#b07d00';
+    title = days >= 14 ? 'Boost acceptable après '+days+' jours' : 'Boost risqué';
+    sub = 'Le boost = '+((boostCost/netSans)*100).toFixed(0)+'% de votre marge. '+(days>=14?'Vu le temps écoulé, ça peut valoir le coup.':'Patientez encore un peu.');
+  } else {
+    bg='#e6f9f0';border='#7dd6a8';tc='#0a7c4e';title='Boost rentable !';
+    sub='Net après boost : '+netAvec.toFixed(2)+' € ('+((netAvec/price)*100).toFixed(1)+'%). Rapport coût/marge excellent.';
+  }
+  v.style.background=bg; v.style.borderColor=border;
+  v.innerHTML='<div class="vt" style="color:'+tc+'">'+title+'</div><div class="vs" style="color:'+tc+'">'+sub+'</div>';
+}
+
+/* ======== MARGE ======== */
+function calcMarge() {
+  const price = parseFloat(document.getElementById('m-price').value);
+  const cost = parseFloat(document.getElementById('m-cost').value);
+  const ship = parseFloat(document.getElementById('m-ship').value);
+  document.getElementById('m-price-out').textContent = price + ' €';
+  document.getElementById('m-cost-out').textContent = cost + ' €';
+  document.getElementById('m-ship-out').textContent = ship.toFixed(1) + ' €';
+  const fees = vFees(price);
+  const net = price - fees - cost - ship;
+  const pct = price > 0 ? (net / price * 100) : 0;
+  document.getElementById('m-fees').textContent = fees.toFixed(2) + ' €';
+  document.getElementById('m-net').textContent = net.toFixed(2) + ' €';
+  document.getElementById('m-pct').textContent = pct.toFixed(1) + '%';
+  const v = document.getElementById('m-verdict');
+  let bg,border,tc,title,sub;
+  if (net < 0) { bg='#fff0f0';border='#ffb3b3';tc='#d32f2f';title='Perte nette';sub='Vous perdez de l\'argent à ce prix. Montez le prix ou réduisez les coûts.'; }
+  else if (pct < 10) { bg='#fff8e6';border='#ffd980';tc='#b07d00';title='Marge très faible';sub='Moins de 10% — acceptable pour déstocker, risqué sur le long terme.'; }
+  else if (pct < 25) { bg='#e6f8f9';border='#09B1BA';tc='#0a7c7c';title='Marge correcte';sub='Entre 10 et 25% — bon rapport pour Vinted. Vous êtes dans la zone verte.'; }
+  else { bg='#e6f9f0';border='#7dd6a8';tc='#0a7c4e';title='Excellente marge !';sub='Plus de 25% de marge nette. Super article à vendre, ne bradez pas le prix !'; }
+  v.style.background=bg; v.style.borderColor=border;
+  v.innerHTML='<div class="vt" style="color:'+tc+'">'+title+'</div><div class="vs" style="color:'+tc+'">'+sub+'</div>';
+  function minPrice(pct) {
+    for (let p = cost+ship+0.71; p <= 500; p += 0.01) {
+      if ((p - vFees(p) - cost - ship) / p >= pct/100) return p.toFixed(2)+' €';
+    } return '—';
+  }
+  document.getElementById('m-p10').textContent = minPrice(10);
+  document.getElementById('m-p20').textContent = minPrice(20);
+  document.getElementById('m-p30').textContent = minPrice(30);
+}
+
+/* ======== ANNONCE ======== */
+function genAnnonce() {
+  const type = document.getElementById('a-type').value.trim();
+  const brand = document.getElementById('a-brand').value.trim();
+  const size = document.getElementById('a-size').value.trim();
+  const state = document.getElementById('a-state').value;
+  const details = document.getElementById('a-details').value.trim();
+  const priceVal = parseFloat(document.getElementById('a-price-field').value) || null;
+  if (!type) { showToast('Renseignez au moins le type d\'article'); return; }
+  const titre = `${brand ? brand+' ' : ''}${type}${size ? ' taille '+size : ''} — ${state}`;
+  const descParts = [
+    state === 'Neuf avec étiquette' ? 'Article neuf, jamais porté, étiquette encore attachée.' :
+    state === 'Neuf sans étiquette' ? 'Article neuf, jamais porté.' : `Article en ${state.toLowerCase()}.`,
+    brand ? 'Marque '+brand+'.' : '',
+    size ? 'Taille '+size+'.' : '',
+    details ? details.charAt(0).toUpperCase()+details.slice(1)+'.' : '',
+    'Envoi rapide et emballage soigné.',
+    "N'hésitez pas à faire une offre ou à me contacter pour plus de photos !"
+  ].filter(Boolean);
+  const desc = descParts.join(' ');
+  const tags = [type, brand, size, state.split(' ')[0], ...(details.split(',').map(d=>d.trim()))].filter(Boolean).slice(0,8);
+  const priceInfo = priceVal ? `<div class="at" style="margin-top:12px">Prix — net pour vous</div><div class="ac" style="font-size:18px;font-weight:700;color:#09B1BA">${priceVal.toFixed(2)} € <span style="font-size:13px;color:#aaa;font-weight:400">→ vous recevez ${(priceVal - vFees(priceVal)).toFixed(2)} €</span></div>` : '';
+  document.getElementById('annonce-out').innerHTML = `
+    <div class="annonce-box">
+      <div class="at">Titre</div><div class="ac">${titre}</div>
+      <div class="at">Description</div><div class="ac" id="desc-text">${desc}</div>
+      ${priceInfo}
+      <div class="at">Mots-clés</div>
+      <div class="tag-list">${tags.map(t=>'<span class="tag">'+t+'</span>').join('')}</div>
+      <button class="copy-btn" onclick="copyText()">Copier la description</button>
+    </div>`;
+}
+
+function copyText() {
+  const t = document.getElementById('desc-text');
+  if (!t) return;
+  navigator.clipboard.writeText(t.textContent).then(() => showToast('Copié !')).catch(() => showToast('Sélectionnez et copiez manuellement'));
+}
+
+/* ======== INIT ======== */
+document.querySelectorAll('#page-boost input[type=range]').forEach(el => el.addEventListener('input', calcBoost));
+document.querySelectorAll('.boost-btn').forEach(btn => btn.addEventListener('click', function() {
+  document.querySelectorAll('.boost-btn').forEach(b => b.classList.remove('active'));
+  this.classList.add('active'); boostCost = parseFloat(this.dataset.cost); calcBoost();
+}));
+document.querySelectorAll('#page-marge input[type=range]').forEach(el => el.addEventListener('input', calcMarge));
+
+renderSales(); calcBoost(); calcMarge();
+</script>
+</body>
+</html>
